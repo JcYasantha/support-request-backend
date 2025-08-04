@@ -1,14 +1,20 @@
 using Microsoft.Extensions.Options;
 using SupportRequest.Core.Config;
-using SupportRequest.Core.Interfaces;
+using SupportRequest.Core.Interfaces.Repository;
+using SupportRequest.Core.Interfaces.Service;
 using SupportRequest.Service;
+using SupportRequest.Service.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<SupportRequestConfig>(builder.Configuration.GetSection("SupportRequest"));
 builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<SupportRequestConfig>>().Value);
+
 builder.Services.AddScoped<ITeamCapacityService, TeamCapacityService>();
+builder.Services.AddScoped<ISupportRequestQueueService, SupportRequestQueueService>();
+
+builder.Services.AddScoped<ITeamsRepository, InMemoryTeamRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

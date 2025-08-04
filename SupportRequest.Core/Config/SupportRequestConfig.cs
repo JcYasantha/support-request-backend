@@ -6,6 +6,7 @@
         public double QueueMultiplier { get; set; }
         public int InactiveTimeoutSeconds { get; set; }
         public int OverFlowAgents { get; set; }
+        public int MainToOverflowRatio { get; set; }
         public Dictionary<string, double> SeniorityMultipliers { get; set; } = [];
     }
 }

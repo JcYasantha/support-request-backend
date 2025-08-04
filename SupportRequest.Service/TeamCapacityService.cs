@@ -1,5 +1,5 @@
 ﻿using SupportRequest.Core.Config;
-using SupportRequest.Core.Interfaces;
+using SupportRequest.Core.Interfaces.Service;
 using SupportRequest.Core.Models;
 
 namespace SupportRequest.Service

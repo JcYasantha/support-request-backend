@@ -1,6 +1,6 @@
 ﻿using SupportRequest.Core.Models;
 
-namespace SupportRequest.Core.Interfaces
+namespace SupportRequest.Core.Interfaces.Service
 {
     public interface ITeamCapacityService
     {

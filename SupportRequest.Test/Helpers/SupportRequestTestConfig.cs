@@ -11,6 +11,7 @@ namespace SupportRequest.Test.Helpers
                 MaxConcurrency = 10,
                 QueueMultiplier = 1.5,
                 OverFlowAgents = 6,
+                MainToOverflowRatio = 5,
                 InactiveTimeoutSeconds = 3,
                 SeniorityMultipliers = new Dictionary<string, double> {
                     {"Junior", 0.4}, {"Mid", 0.6}, {"Senior", 0.8}, {"TeamLead", 0.5}
