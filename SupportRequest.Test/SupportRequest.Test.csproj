@@ -15,6 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SupportRequest.Core\SupportRequest.Core.csproj" />
+    <ProjectReference Include="..\SupportRequest.Service\SupportRequest.Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
