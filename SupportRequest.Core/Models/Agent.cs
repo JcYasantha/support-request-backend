@@ -7,5 +7,7 @@
         public SeniorityLevel SeniorityLevel { get; set; }
         public int CurrentChats {  get; set; }
         public DateTime ShiftEndAt { get; set; }
+
+        public bool IsAvailable(double allowedcapacity) => DateTime.UtcNow < ShiftEndAt && CurrentChats < allowedcapacity; 
     }
 }
