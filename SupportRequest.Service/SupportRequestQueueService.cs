@@ -1,55 +1,58 @@
 ﻿using SupportRequest.Core.Config;
+using SupportRequest.Core.InMemory;
 using SupportRequest.Core.Interfaces.Repository;
 using SupportRequest.Core.Interfaces.Service;
 using SupportRequest.Core.Models;
 
 namespace SupportRequest.Service
 {
-    public class SupportRequestQueueService(ITeamsRepository teamsRepository, ITeamCapacityService teamCapacityService, SupportRequestConfig supportRequestConfig) : ISupportRequestQueueService
+    public class SupportRequestQueueService(ITeamsRepository teamsRepository,
+        ITeamCapacityService teamCapacityService, 
+        SupportRequestConfig supportRequestConfig,
+        InMemorySupportRequestQueueStore queueStore) : ISupportRequestQueueService
     {
         private int mainDequeuedCount = 0;
-        private readonly Queue<SupportRequestSession> mainQueue = new();
-        private readonly Queue<SupportRequestSession> overflowQueue = new();
 
-        public bool QueueSupportRequest(SupportRequestSession supportRequest, bool isOfficeHours)
+        public SupportRequestSession QueueSupportRequest(SupportRequestSession supportRequest, bool isOfficeHours)
         {
-            var mainQueueLimit = teamCapacityService.GetQueueLimit(teamsRepository.GetActiveTeam());
+            var activeTeam = teamsRepository.GetActiveTeam();
+            var mainQueueLimit = teamCapacityService.GetQueueLimit(activeTeam);
             var overflowQueueLimit = teamCapacityService.GetOverFlowCapacity();
-            if (mainQueue.Count < mainQueueLimit)
+            if (queueStore.MainQueue.Count < mainQueueLimit)
             {
-                mainQueue.Enqueue(supportRequest);
-                return true;
+                queueStore.MainQueue.Enqueue(supportRequest);
+                return supportRequest;
             }
 
-            if (isOfficeHours && overflowQueue.Count < overflowQueueLimit)
+            if (isOfficeHours && queueStore.OverflowQueue.Count < overflowQueueLimit)
             {
-                overflowQueue.Enqueue(supportRequest);
-                return true;
+                queueStore.OverflowQueue.Enqueue(supportRequest);
+                return supportRequest;
             }
 
             supportRequest.Status = RequestStatus.Refused;
-            return false;
+            return supportRequest;
         }
 
         public SupportRequestSession? GetPriorityRequest()
         {
-            if (mainQueue.Count > 0 && overflowQueue.Count > 0)
+            if (queueStore.MainQueue.Count > 0 && queueStore.OverflowQueue.Count > 0)
             {
                 if (mainDequeuedCount >= supportRequestConfig.MainToOverflowRatio)
                 {
                     mainDequeuedCount = 0;
-                    return overflowQueue.Dequeue();
+                    return queueStore.OverflowQueue.Dequeue();
                 }
                 mainDequeuedCount++;
-                return mainQueue.Dequeue();
+                return queueStore.MainQueue.Dequeue();
             }
 
-            if (mainQueue.Count > 0) { mainDequeuedCount++; return mainQueue.Dequeue(); }
-            if (overflowQueue.Count > 0) { mainDequeuedCount = 0; return overflowQueue.Dequeue(); }
+            if (queueStore.MainQueue.Count > 0) { mainDequeuedCount++; return queueStore.MainQueue.Dequeue(); }
+            if (queueStore.OverflowQueue.Count > 0) { mainDequeuedCount = 0; return queueStore.OverflowQueue.Dequeue(); }
             return null;
         }
 
-        public int MainQueueCount() => mainQueue.Count;
-        public int OverflowQueueCount() => overflowQueue.Count;
+        public int MainQueueCount() => queueStore.MainQueue.Count;
+        public int OverflowQueueCount() => queueStore.OverflowQueue.Count;
     }
 }

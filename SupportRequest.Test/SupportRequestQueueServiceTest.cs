@@ -1,4 +1,5 @@
 ﻿using Moq;
+using SupportRequest.Core.InMemory;
 using SupportRequest.Core.Interfaces.Repository;
 using SupportRequest.Core.Interfaces.Service;
 using SupportRequest.Core.Models;
@@ -11,14 +12,15 @@ namespace SupportRequest.Test
     {
         private static ISupportRequestQueueService CreateQueueService(int mainLimit = 2, int overflowLimit = 1)
         {
-            var repo = new Mock<ITeamsRepository>();
+            var teamsRepo = new Mock<ITeamsRepository>();
             var teamCapacityService = new Mock<ITeamCapacityService>();
+            var queueStore = new Mock<InMemorySupportRequestQueueStore>();
             teamCapacityService.Setup(c => c.GetQueueLimit(It.IsAny<Team>())).Returns(mainLimit);
             teamCapacityService.Setup(c => c.GetOverFlowCapacity()).Returns(overflowLimit);
 
             var config = SupportRequestTestConfig.CreateTestConfig();
 
-            return new SupportRequestQueueService(repo.Object, teamCapacityService.Object, config);
+            return new SupportRequestQueueService(teamsRepo.Object, teamCapacityService.Object, config, queueStore.Object);
         }
 
         [Fact]
@@ -29,10 +31,10 @@ namespace SupportRequest.Test
             var supportRequest = new SupportRequestSession();
 
             //Act
-            bool result = queueService.QueueSupportRequest(supportRequest, true);
+            var result = queueService.QueueSupportRequest(supportRequest, true);
 
             //Assert
-            Assert.True(result);
+            Assert.NotEqual(result?.Status, RequestStatus.Refused);
             Assert.Equal(1, queueService.MainQueueCount());
         }
 
@@ -45,10 +47,10 @@ namespace SupportRequest.Test
             var supportRequest = new SupportRequestSession();
 
             //Act
-            bool result = queueService.QueueSupportRequest(supportRequest, true);
+            var result = queueService.QueueSupportRequest(supportRequest, true);
 
             //Assert
-            Assert.True(result);
+            Assert.NotEqual(result?.Status, RequestStatus.Refused);
             Assert.Equal(1, queueService.OverflowQueueCount());
 
         }
@@ -63,11 +65,10 @@ namespace SupportRequest.Test
 
             //Act
             var supportRequest = new SupportRequestSession();
-            bool result = queueService.QueueSupportRequest(supportRequest, true);
+            var result = queueService.QueueSupportRequest(supportRequest, true);
 
             //Assert
-            Assert.False(result);
-            Assert.Equal(RequestStatus.Refused, supportRequest.Status);
+            Assert.Equal(RequestStatus.Refused, result.Status);
 
         }
 

@@ -18,6 +18,12 @@ namespace SupportRequest.Service.Repository
             return sessions.Values;
         }
 
+        public SupportRequestSession? GetById(Guid id)
+        {
+            sessions.TryGetValue(id, out var session);
+            return session;
+        }
+
         public void Update(SupportRequestSession supportRequestSession)
         {
             sessions[supportRequestSession.Id] = supportRequestSession;

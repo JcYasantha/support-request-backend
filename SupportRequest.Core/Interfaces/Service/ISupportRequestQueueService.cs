@@ -4,7 +4,7 @@ namespace SupportRequest.Core.Interfaces.Service
 {
     public interface ISupportRequestQueueService
     {
-        bool QueueSupportRequest(SupportRequestSession supportRequest, bool isOfficeHours);
+        SupportRequestSession QueueSupportRequest(SupportRequestSession supportRequest, bool isOfficeHours);
         SupportRequestSession? GetPriorityRequest();
         int MainQueueCount();
         int OverflowQueueCount();
